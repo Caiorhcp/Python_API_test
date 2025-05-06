@@ -1,0 +1,5 @@
+2025-05-06 12:30:22,282 - INFO - Adicionando livro: id=1 titulo='Harry potter 1' autor='J.K'
+2025-05-06 12:30:39,856 - INFO - Listando livros com paginação: skip=0, limit=10
+2025-05-06 12:30:51,982 - INFO - Listando livros com paginação: skip=0, limit=10
+2025-05-06 12:35:12,907 - INFO - Listando livros com paginação: skip=0, limit=10
+2025-05-06 12:35:14,400 - INFO - Listando livros com paginação: skip=0, limit=10
