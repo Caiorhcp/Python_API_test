@@ -78,6 +78,16 @@ def deletar_livro(id: int):
     logging.error("Livro com ID %d não encontrado para exclusão", id)
     raise HTTPException(status_code=404, detail=f"Livro com ID {id} não encontrado")
 
+@app.get("/logs", summary="Acessar logs", description="Retorna os logs da aplicação.")
+def acessar_logs():
+    try:
+        with open("api.log", "r") as log_file:
+            logs = log_file.readlines()
+        return {"logs": logs}
+    except FileNotFoundError:
+        logging.error("Arquivo de logs não encontrado")
+        raise HTTPException(status_code=404, detail="Arquivo de logs não encontrado")
+
 @app.get("/", summary="Homepage", description="Informações sobre a API e como utilizá-la.")
 def homepage():
     logging.info("Acessando a homepage")
