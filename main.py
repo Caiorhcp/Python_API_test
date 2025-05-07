@@ -3,15 +3,26 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
+# Configuração de logs em memória
+log_memory = []  # Lista para armazenar os logs em memória
+
+# Função personalizada para registrar logs em memória
+class MemoryLogHandler(logging.Handler):
+    def emit(self, record):
+        log_entry = self.format(record)
+        log_memory.append(log_entry)
+
 # Configuração de logs
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("api.log"),  # Salva logs em um arquivo
-        logging.StreamHandler()         # Exibe logs no console
+        logging.StreamHandler()  # Exibe logs no console
     ]
 )
+memory_handler = MemoryLogHandler()
+memory_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+logging.getLogger().addHandler(memory_handler)
 
 app = FastAPI()
 
@@ -80,13 +91,10 @@ def deletar_livro(id: int):
 
 @app.get("/logs", summary="Acessar logs", description="Retorna os logs da aplicação.")
 def acessar_logs():
-    try:
-        with open("api.log", "r") as log_file:
-            logs = log_file.readlines()
-        return {"logs": logs}
-    except FileNotFoundError:
-        logging.error("Arquivo de logs não encontrado")
-        raise HTTPException(status_code=404, detail="Arquivo de logs não encontrado")
+    if not log_memory:
+        logging.warning("Nenhum log encontrado")
+        raise HTTPException(status_code=404, detail="Nenhum log encontrado")
+    return {"logs": log_memory}
 
 @app.get("/", summary="Homepage", description="Informações sobre a API e como utilizá-la.")
 def homepage():
@@ -100,7 +108,8 @@ def homepage():
             "buscar_livros": "/livros/buscar (GET)",
             "adicionar_livro": "/livros (POST)",
             "atualizar_livro": "/livros/{id} (PUT)",
-            "deletar_livro": "/livros/{id} (DELETE)"
+            "deletar_livro": "/livros/{id} (DELETE)",
+            "acessar_logs": "/logs (GET)"
         },
         "documentacao": "Acesse /docs para a documentação interativa (Swagger UI) ou /redoc para a documentação alternativa."
     }
