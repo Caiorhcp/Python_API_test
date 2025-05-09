@@ -15,7 +15,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.StreamHandler()  # Exibe logs no console
+        logging.StreamHandler()  
     ]
 )
 memory_handler = MemoryLogHandler()
@@ -93,7 +93,6 @@ def acessar_logs():
         logging.warning("Nenhum log encontrado")
         raise HTTPException(status_code=404, detail="Nenhum log encontrado")
     
-    # Gerar o HTML para exibir os logs
     html_content = """
     <!DOCTYPE html>
     <html lang="en">
@@ -153,20 +152,86 @@ def acessar_logs():
     """
     return HTMLResponse(content=html_content)
 
-@app.get("/", summary="Homepage", description="Informações sobre a API e como utilizá-la.")
+
+@app.get("/", summary="Homepage", description="Informações sobre a API e como utilizá-la.", response_class=HTMLResponse)
 def homepage():
     logging.info("Acessando a homepage")
-    return {
-        "message": "Bem-vindo à API de Livros!",
-        "descricao": "Esta API permite gerenciar um catálogo de livros. Você pode listar todos os livros, buscar um livro por ID, buscar por título ou autor, adicionar, atualizar e deletar livros.",
-        "endpoints": {
-            "listar_livros": "/livros (GET)",
-            "listar_livro_por_id": "/livros/{id} (GET)",
-            "buscar_livros": "/livros/buscar (GET)",
-            "adicionar_livro": "/livros (POST)",
-            "atualizar_livro": "/livros/{id} (PUT)",
-            "deletar_livro": "/livros/{id} (DELETE)",
-            "acessar_logs": "/logs (GET)"
-        },
-        "documentacao": "Acesse /docs para a documentação interativa (Swagger UI) ou /redoc para a documentação alternativa."
-    }
+    
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Bem-vindo à API de Livros</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f9;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 50px auto;
+                padding: 20px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                text-align: center;
+                color: #444;
+            }
+            p {
+                text-align: center;
+                font-size: 16px;
+                color: #666;
+            }
+            ul {
+                list-style-type: none;
+                padding: 0;
+            }
+            li {
+                background: #f9f9f9;
+                margin: 10px 0;
+                padding: 10px;
+                border-left: 4px solid #007BFF;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            li:nth-child(odd) {
+                background: #e9ecef;
+            }
+            footer {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 14px;
+                color: #888;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Bem-vindo à API de Livros!</h1>
+            <p>Esta API permite gerenciar um catálogo de livros. Você pode listar, buscar, adicionar, atualizar e deletar livros.</p>
+            <h2>Endpoints Disponíveis</h2>
+            <ul>
+                <li><strong>Listar Livros:</strong> <code>/livros (GET)</code></li>
+                <li><strong>Buscar Livro por ID:</strong> <code>/livros/{id} (GET)</code></li>
+                <li><strong>Buscar Livros por Título ou Autor:</strong> <code>/livros/buscar (GET)</code></li>
+                <li><strong>Adicionar Livro:</strong> <code>/livros (POST)</code></li>
+                <li><strong>Atualizar Livro:</strong> <code>/livros/{id} (PUT)</code></li>
+                <li><strong>Deletar Livro:</strong> <code>/livros/{id} (DELETE)</code></li>
+                <li><strong>Acessar Logs:</strong> <code>/logs (GET)</code></li>
+            </ul>
+            <p>Acesse a <a href="/docs">documentação interativa (Swagger UI)</a> ou a <a href="/redoc">documentação alternativa (ReDoc)</a>.</p>
+        </div>
+        <footer>
+            Criado por Caio Gonçalves - 5º semestre
+        </footer>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
