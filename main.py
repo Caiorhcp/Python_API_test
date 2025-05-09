@@ -1,18 +1,16 @@
 import logging
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
-# Configuração de logs em memória
-log_memory = []  # Lista para armazenar os logs em memória
+log_memory = []  
 
-# Função personalizada para registrar logs em memória
 class MemoryLogHandler(logging.Handler):
     def emit(self, record):
         log_entry = self.format(record)
         log_memory.append(log_entry)
 
-# Configuração de logs
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -89,12 +87,71 @@ def deletar_livro(id: int):
     logging.error("Livro com ID %d não encontrado para exclusão", id)
     raise HTTPException(status_code=404, detail=f"Livro com ID {id} não encontrado")
 
-@app.get("/logs", summary="Acessar logs", description="Retorna os logs da aplicação.")
+@app.get("/logs", summary="Acessar logs", description="Retorna os logs da aplicação em formato HTML.", response_class=HTMLResponse)
 def acessar_logs():
     if not log_memory:
         logging.warning("Nenhum log encontrado")
         raise HTTPException(status_code=404, detail="Nenhum log encontrado")
-    return {"logs": log_memory}
+    
+    # Gerar o HTML para exibir os logs
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Logs da Aplicação</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f9;
+                color: #333;
+            }
+            .container {
+                max-width: 800px;
+                margin: 50px auto;
+                padding: 20px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                text-align: center;
+                color: #444;
+            }
+            ul {
+                list-style-type: none;
+                padding: 0;
+            }
+            li {
+                background: #f9f9f9;
+                margin: 10px 0;
+                padding: 10px;
+                border-left: 4px solid #007BFF;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            li:nth-child(odd) {
+                background: #e9ecef;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Logs da Aplicação</h1>
+            <ul>
+    """
+    for log in log_memory:
+        html_content += f"<li>{log}</li>"
+    html_content += """
+            </ul>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @app.get("/", summary="Homepage", description="Informações sobre a API e como utilizá-la.")
 def homepage():
