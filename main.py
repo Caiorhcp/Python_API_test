@@ -4,6 +4,37 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
+import time
+from prometheus_client import Counter, Histogram, generate_latest
+from fastapi.responses import Response
+
+app = FastAPI()
+
+# Métricas Prometheus
+REQUEST_COUNT = Counter("request_count", "Número de requisições recebidas", ["method", "endpoint", "http_status"])
+REQUEST_LATENCY = Histogram("request_latency_seconds", "Tempo de resposta das requisições", ["method", "endpoint"])
+
+@app.middleware("http")
+async def metrics_middleware(request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+
+    REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path, http_status=response.status_code).inc()
+    REQUEST_LATENCY.labels(method=request.method, endpoint=request.url.path).observe(process_time)
+
+    return response
+
+from fastapi import Request
+
+@app.get("/metrics", summary="Métricas Prometheus", description="Exibe métricas no formato Prometheus.")
+async def metrics(request: Request):
+    allowed_ips = ["127.0.0.1", "localhost", "host.docker.internal"]  # adicione outros IPs se necessário
+    client_host = request.client.host
+    if client_host not in allowed_ips:
+        return Response(status_code=403, content="Forbidden")
+    return Response(generate_latest(), media_type="text/plain")
+
 log_memory = []  
 
 class MemoryLogHandler(logging.Handler):
@@ -86,6 +117,15 @@ def deletar_livro(id: int):
             return {"message": f"Livro com ID {id} deletado com sucesso"}
     logging.error("Livro com ID %d não encontrado para exclusão", id)
     raise HTTPException(status_code=404, detail=f"Livro com ID {id} não encontrado")
+
+@app.get("/health", summary="Healthcheck da API", description="Retorna o status e métricas básicas da API.")
+def health():
+    return {
+        "status": "ok",
+        "total_livros": len(livros),
+        "total_logs": len(log_memory),
+        "mensagem": "API funcionando normalmente"
+    }
 
 @app.get("/logs", summary="Acessar logs", description="Retorna os logs da aplicação em formato HTML.", response_class=HTMLResponse)
 def acessar_logs():
@@ -225,6 +265,7 @@ def homepage():
                 <li><strong>Atualizar Livro:</strong> <code>/livros/{id} (PUT)</code></li>
                 <li><strong>Deletar Livro:</strong> <code>/livros/{id} (DELETE)</code></li>
                 <li><strong>Acessar Logs:</strong> <code>/logs (GET)</code></li>
+                <li><strong>Healthcheck:</strong> <code>/health (GET)</code></li>
             </ul>
             <p>Acesse a <a href="/docs">documentação interativa (Swagger UI)</a> ou a <a href="/redoc">documentação alternativa (ReDoc)</a>.</p>
         </div>

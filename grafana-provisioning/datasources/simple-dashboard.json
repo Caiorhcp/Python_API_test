@@ -1,0 +1,43 @@
+{
+  "id": null,
+  "title": "FastAPI Metrics",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Total Requests",
+      "targets": [
+        {
+          "expr": "sum(request_count)",
+          "format": "time_series"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Request Latency (avg)",
+      "targets": [
+        {
+          "expr": "avg(request_latency_seconds_sum / request_latency_seconds_count)",
+          "format": "time_series"
+        }
+      ],
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 }
+    },
+    {
+      "type": "piechart",
+      "title": "HTTP Status Codes",
+      "targets": [
+        {
+          "expr": "sum by (http_status) (increase(request_count[5m]))",
+          "format": "time_series"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 4, "w": 16, "h": 8 }
+    }
+  ],
+  "schemaVersion": 30,
+  "version": 1,
+  "refresh": "10s"
+}
