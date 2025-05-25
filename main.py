@@ -10,7 +10,7 @@ from fastapi.responses import Response
 
 app = FastAPI()
 
-# Métricas Prometheus
+# Métricas Prometheuss
 REQUEST_COUNT = Counter("request_count", "Número de requisições recebidas", ["method", "endpoint", "http_status"])
 REQUEST_LATENCY = Histogram("request_latency_seconds", "Tempo de resposta das requisições", ["method", "endpoint"])
 
